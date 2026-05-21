@@ -35,7 +35,7 @@ models:
   - name: DeepSeek Coder
     provider: deepseek
     model: deepseek-chat
-    apiKey: sk-cc80c50a203e4a068e3aec667befb064
+    apiKey: sk-...
     roles:
       - chat
       - edit
