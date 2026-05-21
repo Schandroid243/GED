@@ -1,0 +1,50 @@
+import { Processor, Process, OnQueueFailed } from '@nestjs/bull';
+import { Logger } from '@nestjs/common';
+import { Job } from 'bullmq';
+import { ConfigService } from '@nestjs/config';
+import { QueueName } from '../../common/queues/queue-names.enum';
+import { OcrService } from './ocr.service';
+import { OcrJobData } from './interfaces/ocr-job.interface';
+import { NonRetriableError } from '../../common/errors/non-retriable.error';
+
+@Processor(QueueName.OCR_EXTRACTION)
+export class OcrProcessor {
+  private readonly logger = new Logger(OcrProcessor.name);
+  private readonly concurrency: number;
+
+  constructor(
+    private readonly ocrService: OcrService,
+    private readonly config: ConfigService,
+  ) {
+    this.concurrency = config.get<number>('OCR_CONCURRENCY', 1);
+  }
+
+  @Process({ name: 'extract', concurrency: 1 })
+  async handleExtract(job: Job<OcrJobData>): Promise<{ pageCount: number }> {
+    const { documentId, correlationId } = job.data;
+    this.logger.log(`[${correlationId}] OCR démarré : ${documentId}`);
+
+    await job.updateProgress(0);
+    try {
+      const result = await this.ocrService.processDocument(job.data, (p) => job.updateProgress(p));
+      await job.updateProgress(100);
+      this.logger.log(`[${correlationId}] OCR terminé : ${documentId} — ${result.pageCount} page(s)`);
+      return result;
+    } catch (error) {
+      if (error instanceof NonRetriableError) {
+        this.logger.error(`[${correlationId}] Erreur non-retriable OCR : ${error.message}`);
+        throw error;
+      }
+      this.logger.warn(`[${correlationId}] Échec transitoire OCR, retry planifié : ${error.message}`);
+      throw error;
+    }
+  }
+
+  @OnQueueFailed()
+  async onFailed(job: Job<OcrJobData>, error: Error): Promise<void> {
+    this.logger.error(
+      `[${job.data.correlationId}] Job OCR ${job.id} échoué définitivement : ${error.message}`,
+    );
+    await this.ocrService.handleFailure(job.data, error);
+  }
+}
