@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
 import { envValidationSchema } from '../config/env.validation';
 import { bullConfigFactory } from '../config/bull.config';
@@ -45,14 +45,14 @@ import { QueueAdminModule }     from '../admin/queue-admin.module';
       useFactory: (config: ConfigService) => ({
         type:        'mysql',
         host:        config.get<string>('DB_HOST'),
-        port:        config.get<number>('DB_PORT'),
+        port:        parseInt(config.get<string>('DB_PORT')!),
         username:    config.get<string>('DB_USER'),
         password:    config.get<string>('DB_PASSWORD'),
         database:    config.get<string>('DB_NAME'),
         entities:    [JobRecord, Document, OcrResult],
         synchronize: config.get<boolean>('DB_SYNCHRONIZE'), // false en prod
-        logging:     config.get<boolean>('DB_LOGGING'),
-      }),
+        logging:     config.get<boolean>('DB_LOGGING') ?? false,
+      } as TypeOrmModuleOptions),
       inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([JobRecord]),

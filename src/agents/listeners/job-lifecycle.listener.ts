@@ -1,19 +1,29 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { OnQueueEvent, QueueEventsHost } from '@nestjs/bull';
+import { Processor, OnQueueEvent, InjectQueue } from '@nestjs/bull';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JobRecord, JobStatus } from '../entities/job-record.entity';
+import { Job } from 'bullmq';
+
 
 @Injectable()
-export class JobLifecycleListener extends QueueEventsHost {
+@Processor('job-queue')
+export class JobLifecycleListener {
   private readonly logger = new Logger(JobLifecycleListener.name);
 
   constructor(
+    @InjectQueue('job-queue') private readonly jobQueue: any,
     @InjectRepository(JobRecord)
     private readonly jobRecordRepo: Repository<JobRecord>,
   ) {
-    super();
   }
+
+  onModuleInit() {
+    this.jobQueue.on('delayed', (job: Job, delayedTimestamp: number) => {
+      this.jobRecordRepo.update(job.id ?? "", { status: 'delayed' });
+      this.logger.debug(`Job ${job.id} → delayed`);
+    });
+  };
 
   @OnQueueEvent('active')
   async onActive({ jobId }: { jobId: string }): Promise<void> {
@@ -36,9 +46,9 @@ export class JobLifecycleListener extends QueueEventsHost {
     this.logger.error(`Job ${jobId} échoué : ${failedReason}`);
   }
 
-  @OnQueueEvent('delayed')
-  async onDelayed({ jobId }: { jobId: string }): Promise<void> {
-    await this.jobRecordRepo.update(jobId, { status: 'delayed' });
-    this.logger.debug(`Job ${jobId} → delayed`);
-  }
+  // @OnQueueEvent('delayed')
+  // async onDelayed(job: Job, delayedTimestamp: number): Promise<void> {
+  //   await this.jobRecordRepo.update(job.id, { status: 'delayed' });
+  //   this.logger.debug(`Job ${job.id} → delayed`);
+  // }
 }

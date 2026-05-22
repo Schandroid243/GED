@@ -87,9 +87,11 @@ export class DocumentIngestionService {
     try {
       await this.generateThumbnail(storedFile.absolutePath, tenantId, documentId, mimeType);
       this.logger.log(`[${correlationId}] Miniature générée`);
-    } catch (err) {
+    } catch (err: unknown) {
       // Échec non bloquant : la miniature n'est pas critique
-      this.logger.warn(`[${correlationId}] Échec génération miniature : ${err.message}`);
+      if (err instanceof Error) {
+        this.logger.warn(`[${correlationId}] Échec génération miniature : ${err.message}`);
+      }
     }
 
     // ── Étape 4 : Mise à jour statut ──────────────────────────
@@ -136,12 +138,14 @@ export class DocumentIngestionService {
           `Virus détecté ou analyse impossible : ${stdout.trim()}`,
         );
       }
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof NonRetriableError) {
         throw error;
       }
       // Si clamdscan n'est pas disponible, on log un avertissement mais on continue
-      this.logger.warn(`Analyse antivirus indisponible (clamdscan) : ${error.message}`);
+      if (error instanceof Error) {
+        this.logger.warn(`Analyse antivirus indisponible (clamdscan) : ${error.message}`);
+      }
     }
   }
 

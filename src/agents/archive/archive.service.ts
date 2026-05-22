@@ -73,58 +73,63 @@ export class ArchiveService {
         );
 
         // ── Étape 1 : Récupération des infos document ────────────
-        const doc = await this.documentService.getDocument(documentId);
-        if (!doc) {
-          this.logger.warn(
-            `[${correlationId}] Document ${documentId} introuvable, ignoré`,
+        const doc = await this.documentService.findById(documentId ?? "");
+          if (!doc) {
+            this.logger.warn(
+              `[${correlationId}] Document ${documentId} introuvable, ignoré`,
+            );
+            continue;
+          }
+          
+          const relativePath = path.join(
+          'tenants', tenantId, 'documents', documentId ?? "", 'original.pdf',
           );
-          continue;
-        }
-
-        const relativePath = path.join(
-          'tenants', tenantId, 'documents', documentId, 'original.pdf',
-        );
-
-        // ── Étape 2 : Conversion en PDF/A ───────────────────────
-        const tempDir = this.config.get<string>('UPLOAD_TEMP_DIR', '/tmp/uploads');
-        const outputPdf = path.join(tempDir, `archive-${documentId}.pdf`);
-
-        try {
-          await this.convertToPdfA(relativePath, outputPdf, doc.mimeType ?? 'application/pdf');
-        } catch (convertErr) {
-          this.logger.error(
-            `[${correlationId}] Échec conversion PDF/A pour ${documentId} : ${convertErr.message}`,
-          );
-          throw new NonRetriableError(
-            `Conversion PDF/A impossible pour ${documentId} (${convertErr.message})`,
-          );
-        }
+          // ── Étape 2 : Conversion en PDF/A ───────────────────────
+          const tempDir = this.config.get<string>('UPLOAD_TEMP_DIR', '/tmp/uploads');
+          const outputPdf = path.join(tempDir, `archive-${documentId ?? ""}.pdf`);
+          try {
+            await this.convertToPdfA(relativePath, outputPdf, doc.mimeType ?? 'application/pdf');
+          } catch (convertErr: unknown) {
+            if (convertErr instanceof Error) {
+              this.logger.error(
+              `[${correlationId}] Échec conversion PDF/A pour ${documentId} : ${convertErr.message}`,
+            );
+            throw new NonRetriableError(
+              `Conversion PDF/A impossible pour ${documentId} (${convertErr.message})`,
+            );
+            }
+          }
 
         // ── Étape 3 : Signature électronique (PAdES) ────────────
         if (signElectronically) {
           try {
-            await this.signPades(outputPdf, documentId);
+            if (documentId) {
+              await this.signPades(outputPdf, documentId);
+            }
           } catch (signErr) {
-            this.logger.warn(
+            if (signErr instanceof Error) {
+              this.logger.warn(
               `[${correlationId}] Signature PAdES ignorée pour ${documentId} : ${signErr.message}`,
             );
+            }
           }
         }
 
         // ── Étape 4 : Déplacement vers l'archive ────────────────
         // Utilise directement le filesystem pour déplacer vers LOCAL_STORAGE_ARCHIVE
-        const archiveDir = path.join(
-          this.config.get<string>('LOCAL_STORAGE_ARCHIVE', '/var/ged/archive'),
-          'tenants', tenantId, documentId,
-        );
-        await fs.mkdir(archiveDir, { recursive: true });
-        const destPath = path.join(archiveDir, 'archive.pdf');
-        await fs.rename(outputPdf, destPath);
-
-        this.logger.log(`[${correlationId}] Fichier archivé vers ${destPath}`);
-
-        // ── Étape 5 : Mise à jour du statut ─────────────────────
+        if (documentId) {
+            const archiveDir = path.join(
+            this.config.get<string>('LOCAL_STORAGE_ARCHIVE', '/var/ged/archive'),
+            'tenants', tenantId, documentId,
+          );
+          await fs.mkdir(archiveDir, { recursive: true });
+          const destPath = path.join(archiveDir, 'archive.pdf');
+          await fs.rename(outputPdf, destPath);
+  
+          this.logger.log(`[${correlationId}] Fichier archivé vers ${destPath}`);
+          // ── Étape 5 : Mise à jour du statut ─────────────────────
         await this.documentService.updateStatus(documentId, DocumentStatus.ARCHIVED);
+        }
 
         // ── Étape 6 : Programmation de la destruction ───────────
         const retentionMs = this.resolveRetentionMs(archiveProfile);
@@ -141,10 +146,12 @@ export class ArchiveService {
             `[${correlationId}] Destruction programmée dans ${Math.round(retentionMs / 86400000)} jours pour ${documentId}`,
           );
         }
-      } catch (err) {
-        this.logger.error(
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          this.logger.error(
           `[${correlationId}] Échec archivage document ${documentId} : ${err.message}`,
         );
+        }
         throw err; // Le processor gèrera le retry
       }
     }
@@ -196,8 +203,10 @@ export class ArchiveService {
           // Ignorer les erreurs individuelles
         }
       }
-    } catch (err) {
-      this.logger.warn(`Impossible de nettoyer ${tempDir} : ${err.message}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        this.logger.warn(`Impossible de nettoyer ${tempDir} : ${err.message}`);
+      }
     }
 
     // 2. Purger JobRecord en état final (completed/failed) créés il y a > 30 jours
@@ -246,10 +255,12 @@ export class ArchiveService {
           '-sOutputFile=' + outputPath,
           inputPath,
         ], { timeout: 120_000 });
-      } catch (gsErr) {
-        throw new NonRetriableError(
-          `Ghostscript a échoué pour ${inputPath} : ${gsErr.message}`,
-        );
+      } catch (gsErr: unknown) {
+        if (gsErr instanceof NonRetriableError) {
+            throw new NonRetriableError(
+            `Ghostscript a échoué pour ${inputPath} : ${gsErr.message}`,
+          );
+        }
       }
     } else {
       // Utiliser LibreOffice pour les autres formats (docx, xlsx, images)
@@ -265,10 +276,12 @@ export class ArchiveService {
         // LibreOffice crée un fichier .pdf du même nom, on le renomme
         const generatedPdf = path.join(tempDir, path.basename(inputPath, path.extname(inputPath)) + '.pdf');
         await fs.rename(generatedPdf, outputPath);
-      } catch (loErr) {
-        throw new NonRetriableError(
-          `LibreOffice a échoué pour ${inputPath} : ${loErr.message}`,
-        );
+      } catch (loErr: unknown) {
+        if (loErr instanceof NonRetriableError) {
+          throw new NonRetriableError(
+            `LibreOffice a échoué pour ${inputPath} : ${loErr.message}`,
+          );
+        }
       }
     }
   }

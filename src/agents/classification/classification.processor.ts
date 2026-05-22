@@ -32,12 +32,14 @@ export class ClassificationProcessor {
         `[${correlationId}] Classification terminée : ${documentId} → ${result.documentType} (conf: ${result.confidence})`,
       );
       return result;
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof NonRetriableError) {
         this.logger.error(`[${correlationId}] Erreur non-retriable classification : ${error.message}`);
         throw error;
       }
-      this.logger.warn(`[${correlationId}] Échec transitoire classification, retry planifié : ${error.message}`);
+      if (error instanceof NonRetriableError) {
+        this.logger.warn(`[${correlationId}] Échec transitoire classification, retry planifié : ${error.message}`);
+      }
       throw error;
     }
   }

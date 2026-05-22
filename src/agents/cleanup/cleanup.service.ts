@@ -32,15 +32,17 @@ export class CleanupService implements OnApplicationBootstrap {
         'cleanup',
         {},
         {
-          repeat: { cron: '0 */6 * * *' },
+          repeat: { pattern: '0 */6 * * *' },
           jobId: 'recurring-cleanup',
         },
       );
       this.logger.log('Nettoyage périodique enregistré : toutes les 6h (CRON: 0 */6 * * *)');
-    } catch (err) {
-      this.logger.error(
-        `Impossible d'enregistrer le CRON de nettoyage : ${err.message}`,
-      );
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        this.logger.error(
+          `Impossible d'enregistrer le CRON de nettoyage : ${err.message}`,
+        );
+      }
     }
   }
 
@@ -93,12 +95,13 @@ export class CleanupService implements OnApplicationBootstrap {
           // Ignorer les erreurs sur les fichiers individuels
         }
       }
-    } catch (err) {
-      this.logger.warn(
-        `Impossible de nettoyer le répertoire temporaire ${tempDir} : ${err.message}`,
-      );
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        this.logger.warn(
+          `Impossible de nettoyer le répertoire temporaire ${tempDir} : ${err.message}`,
+        );
+      }
     }
-
     if (deletedCount > 0) {
       this.logger.log(`${deletedCount} fichier(s) temporaire(s) supprimé(s)`);
     }
@@ -121,10 +124,12 @@ export class CleanupService implements OnApplicationBootstrap {
           `${result.affected} enregistrement(s) JobRecord purgé(s) (plus de 30 jours)`,
         );
       }
-    } catch (err) {
-      this.logger.error(
-        `Erreur lors de la purge des JobRecord : ${err.message}`,
-      );
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        this.logger.error(
+          `Erreur lors de la purge des JobRecord : ${err.message}`,
+        );
+      }
     }
   }
 

@@ -10,26 +10,26 @@ export type JobStatus = 'waiting' | 'active' | 'completed' | 'failed' | 'delayed
 @Index(['createdAt'])                // pour le cleanup CRON
 export class JobRecord {
   @PrimaryColumn({ type: 'varchar', length: 64 })
-  jobId: string;                     // ID BullMQ (string)
+  jobId!: string;                     // ID BullMQ (string)
 
   @Column({ type: 'varchar', length: 50 })
-  queueName: QueueName;
+  queueName!: QueueName;
 
   @Column({ type: 'varchar', length: 50 })
-  jobName: string;
+  jobName!: string;
 
   @Column({ type: 'json' })
-  data: Record<string, unknown>;
+  data!: Record<string, unknown>;
 
   @Column({
     type: 'enum',
     enum: ['waiting', 'active', 'completed', 'failed', 'delayed', 'paused'],
     default: 'waiting',
   })
-  status: JobStatus;
+  status!: JobStatus;
 
   @Column({ type: 'tinyint', default: 0 })
-  attemptsMade: number;
+  attemptsMade!: number;
 
   @Column({ type: 'varchar', length: 36, nullable: true })
   correlationId?: string;            // pour le tracing
@@ -41,8 +41,8 @@ export class JobRecord {
   returnValue?: Record<string, unknown>;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

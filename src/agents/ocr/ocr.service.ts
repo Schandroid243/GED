@@ -116,8 +116,8 @@ export class OcrService {
       // Regroupement par page
       const pagesMap = new Map<number, string[]>();
       for (let i = 1; i < lines.length; i++) {
-        const cols = lines[i].split('\t');
-        const pageNum = parseInt(cols[pageNumIdx], 10);
+        const cols = lines[i]?.split('\t') ?? [];
+        const pageNum = parseInt(cols[pageNumIdx] ?? "", 10);
         const text = cols[textIdx]?.trim();
         if (!isNaN(pageNum) && text) {
           if (!pagesMap.has(pageNum)) {
@@ -154,11 +154,13 @@ export class OcrService {
       }
 
       this.logger.log(`[${correlationId}] ${pageCount} page(s) OCR insérées en base`);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof NonRetriableError) {
         throw error;
       }
-      this.logger.warn(`[${correlationId}] Erreur parsing OCR : ${error.message}`);
+      if (error instanceof Error) {
+        this.logger.warn(`[${correlationId}] Erreur parsing OCR : ${error.message}`);
+      }
       // Considérer comme OCR partiel
       pageCount = 0;
     }

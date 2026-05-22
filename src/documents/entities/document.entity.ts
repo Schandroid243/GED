@@ -8,23 +8,23 @@ import { DocumentType } from '../enums/document-type.enum';
 @Entity('documents')
 export class Document {
   @PrimaryColumn({ type: 'varchar', length: 36 })
-  id: string;                           // UUID
+  id!: string;                           // UUID
 
   @Column({ type: 'varchar', length: 36 })
-  tenantId: string;
+  tenantId!: string;
 
   @Column({ type: 'varchar', length: 255 })
-  originalName: string;
+  originalName!: string;
 
   @Column({ type: 'varchar', length: 100 })
-  mimeType: string;
+  mimeType!: string;
 
   @Column({
     type: 'enum',
     enum: DocumentStatus,
     default: DocumentStatus.UPLOADING,
   })
-  status: DocumentStatus;
+  status!: DocumentStatus;
 
   @Column({
     type: 'enum',
@@ -43,17 +43,17 @@ export class Document {
   classificationConfidence?: number;
 
   @Column({ type: 'boolean', default: false })
-  indexed: boolean;
+  indexed!: boolean;
 
   @Column({ type: 'json', nullable: true })
   metadata?: Record<string, string>;
 
   @Column({ type: 'varchar', length: 36 })
-  uploadedBy: string;                   // UUID utilisateur
+  uploadedBy!: string;                   // UUID utilisateur
 
   @Column({ type: 'datetime', nullable: true })
   createdAt?: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

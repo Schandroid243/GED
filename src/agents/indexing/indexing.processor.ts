@@ -29,12 +29,14 @@ export class IndexingProcessor {
       await this.indexingService.indexDocument(job.data, (p) => job.updateProgress(p));
       await job.updateProgress(100);
       this.logger.log(`[${correlationId}] Indexation terminée : ${documentId}`);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof NonRetriableError) {
         this.logger.error(`[${correlationId}] Erreur non-retriable indexation : ${error.message}`);
         throw error;
       }
-      this.logger.warn(`[${correlationId}] Échec transitoire indexation, retry planifié : ${error.message}`);
+      if (error instanceof Error) {
+        this.logger.warn(`[${correlationId}] Échec transitoire indexation, retry planifié : ${error.message}`);
+      }
       throw error;
     }
   }

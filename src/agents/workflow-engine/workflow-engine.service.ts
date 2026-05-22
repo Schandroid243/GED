@@ -116,7 +116,7 @@ export class WorkflowEngineService {
           tenantId,
           correlationId,
           newStatus: transition.toStatus,
-          context,
+          ...(context && { context }),
         });
       }
 
@@ -184,7 +184,7 @@ export class WorkflowEngineService {
             documentId: ctx.documentId,
             eventType: action.eventOnTimeout,
             correlationId: ctx.correlationId,
-            context: ctx.context,
+            ...(ctx.context && { context: ctx.context }),
           };
 
           await this.workflowQueue.add('event', timeoutData, {

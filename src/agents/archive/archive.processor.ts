@@ -36,16 +36,18 @@ export class ArchiveProcessor {
       this.logger.log(
         `[${correlationId}] Archivage batch terminé : ${documentIds.length} document(s)`,
       );
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof NonRetriableError) {
         this.logger.error(
           `[${correlationId}] Erreur non-retriable archivage batch : ${error.message}`,
         );
         throw error;
       }
-      this.logger.warn(
+      if (error instanceof Error) {
+        this.logger.warn(
         `[${correlationId}] Échec transitoire archivage batch, retry planifié : ${error.message}`,
       );
+      }
       throw error;
     }
   }
@@ -63,16 +65,18 @@ export class ArchiveProcessor {
       await this.archiveService.destroyDocument(job.data, (p) => job.updateProgress(p));
       await job.updateProgress(100);
       this.logger.log(`[${correlationId}] Destruction terminée : ${documentId}`);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof NonRetriableError) {
         this.logger.error(
           `[${correlationId}] Erreur non-retriable destruction : ${error.message}`,
         );
         throw error;
       }
-      this.logger.warn(
+      if (error instanceof Error) {
+        this.logger.warn(
         `[${correlationId}] Échec transitoire destruction, retry planifié : ${error.message}`,
       );
+      }
       throw error;
     }
   }
@@ -86,8 +90,10 @@ export class ArchiveProcessor {
     try {
       await this.archiveService.performCleanup();
       this.logger.log('Nettoyage périodique terminé');
-    } catch (error) {
-      this.logger.error(`Échec du nettoyage périodique : ${error.message}`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        this.logger.error(`Échec du nettoyage périodique : ${error.message}`);
+      }
       throw error;
     }
   }

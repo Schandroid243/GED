@@ -108,10 +108,12 @@ export class NotificationService {
         this.logger.debug(
           `[${correlationId}] Notification envoyée via ${channel}`,
         );
-      } catch (err) {
-        const errorMsg = `Échec ${channel} : ${err.message}`;
-        channelErrors.push(errorMsg);
-        this.logger.warn(`[${correlationId}] ${errorMsg}`);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          const errorMsg = `Échec ${channel} : ${err.message}`;
+          channelErrors.push(errorMsg);
+          this.logger.warn(`[${correlationId}] ${errorMsg}`);
+        }
       }
     }
 

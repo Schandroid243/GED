@@ -31,7 +31,10 @@ export class DocumentIngestionProcessor {
         this.logger.error(`[${correlationId}] Erreur non-retriable : ${error.message}`);
         throw error; // BullMQ ne réessaiera pas si NonRetriableError
       }
-      this.logger.warn(`[${correlationId}] Échec transitoire, retry planifié : ${error.message}`);
+
+      if (error instanceof NonRetriableError) {
+        this.logger.warn(`[${correlationId}] Échec transitoire, retry planifié : ${error.message}`);
+      }
       throw error;
     }
   }

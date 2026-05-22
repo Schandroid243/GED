@@ -33,16 +33,18 @@ export class WorkflowEngineProcessor {
       this.logger.log(
         `[${correlationId}] Événement workflow traité : ${eventType} pour ${documentId}`,
       );
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof NonRetriableError) {
         this.logger.error(
           `[${correlationId}] Erreur non-retriable workflow : ${error.message}`,
         );
         throw error;
       }
-      this.logger.warn(
-        `[${correlationId}] Échec transitoire workflow, retry planifié : ${error.message}`,
-      );
+      if (error instanceof Error) {
+        this.logger.warn(
+          `[${correlationId}] Échec transitoire workflow, retry planifié : ${error.message}`,
+        );
+      }
       throw error;
     }
   }

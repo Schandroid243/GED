@@ -77,8 +77,10 @@ export class ClassificationService {
         if (mlResult.confidence > 0.7) {
           bestMatch = { type: mlResult.documentType, score: mlResult.confidence };
         }
-      } catch (err) {
-        this.logger.warn(`[${correlationId}] Appel ML échoué, fallback heuristique : ${err.message}`);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          this.logger.warn(`[${correlationId}] Appel ML échoué, fallback heuristique : ${err.message}`);
+        }
       }
     }
 

@@ -36,16 +36,18 @@ export class NotificationProcessor {
       this.logger.log(
         `[${correlationId}] Notification terminée : template=${templateName}`,
       );
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof NonRetriableError) {
         this.logger.error(
           `[${correlationId}] Erreur non-retriable notification : ${error.message}`,
         );
         throw error;
       }
-      this.logger.warn(
-        `[${correlationId}] Échec transitoire notification, retry planifié : ${error.message}`,
-      );
+      if (error instanceof Error) {
+        this.logger.warn(
+          `[${correlationId}] Échec transitoire notification, retry planifié : ${error.message}`,
+        );
+      }
       throw error;
     }
   }

@@ -6,26 +6,26 @@ import {
 @Index(['documentId'])
 export class OcrResult {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ type: 'varchar', length: 36 })
-  documentId: string;
+  documentId!: string;
 
   @Column({ type: 'varchar', length: 36 })
-  tenantId: string;
+  tenantId!: string;
 
   @Column({ type: 'int' })
-  pageNumber: number;
+  pageNumber!: number;
 
   @Column({ type: 'longtext' })
-  rawText: string;
+  rawText!: string;
 
   @Column({ type: 'json', nullable: true })
   hocrData?: Record<string, unknown>;  // structure hOCR (positions des mots)
 
   @Column({ type: 'varchar', length: 10, default: 'fra' })
-  language: string;                     // code ISO 639-2
+  language!: string;                     // code ISO 639-2
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 }

@@ -30,12 +30,14 @@ export class OcrProcessor {
       await job.updateProgress(100);
       this.logger.log(`[${correlationId}] OCR terminé : ${documentId} — ${result.pageCount} page(s)`);
       return result;
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof NonRetriableError) {
         this.logger.error(`[${correlationId}] Erreur non-retriable OCR : ${error.message}`);
         throw error;
       }
-      this.logger.warn(`[${correlationId}] Échec transitoire OCR, retry planifié : ${error.message}`);
+      if (error instanceof Error) {
+        this.logger.warn(`[${correlationId}] Échec transitoire OCR, retry planifié : ${error.message}`);
+      }
       throw error;
     }
   }

@@ -106,7 +106,7 @@ export class IndexingService {
     onProgress(80);
 
     // ── Étape 4 : Marquer le document comme indexé ──────────────
-    await this.documentService.markIndexed(documentId, updatedMetadata);
+    await this.documentService.markIndexed(documentId);
 
     this.logger.log(
       `[${correlationId}] Document ${documentId} indexé : ${filteredTokens.length} tokens significatifs`,
