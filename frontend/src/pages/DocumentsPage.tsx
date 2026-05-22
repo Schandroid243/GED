@@ -20,7 +20,7 @@ export function DocumentsPage() {
   const [page, setPage] = useState(1);
   const [sortField, setSortField] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [, setSelectedIds] = useState<string[]>([]);
   const [filters, setFilters] = useState<DocumentFiltersState>({});
 
   const queryParams = {
@@ -124,7 +124,7 @@ export function DocumentsPage() {
             <EmptyState
               title="Aucun document"
               description="Déposez votre premier document pour commencer"
-              action={{ label: 'Déposer', onClick: () => setDrawerOpen(true) }}
+              action={<Button variant="primary" onClick={() => setDrawerOpen(true)}>Déposer</Button>}
             />
           ) : (
             <DocumentTable
@@ -147,7 +147,7 @@ export function DocumentsPage() {
             <EmptyState
               title="Aucun document"
               description="Déposez votre premier document pour commencer"
-              action={{ label: 'Déposer', onClick: () => setDrawerOpen(true) }}
+              action={<Button variant="primary" onClick={() => setDrawerOpen(true)}>Déposer</Button>}
             />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

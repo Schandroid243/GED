@@ -16,7 +16,7 @@ export interface Document {
   classificationConfidence: number | null; // 0.0 – 1.0
   indexed:                  boolean;
   filePath:                 string;        // chemin relatif LOCAL_STORAGE_ROOT
-  thumbnailKey:             string | null;
+  thumbnailPath:            string | null;
   metadata:                 Record<string, string>;
   uploadedBy:               string;        // UUID utilisateur
   createdAt:                string;        // ISO 8601

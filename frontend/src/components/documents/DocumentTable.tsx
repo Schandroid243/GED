@@ -4,7 +4,6 @@ import {
   useReactTable,
   getCoreRowModel,
   flexRender,
-  createColumnHelper,
   type SortingState,
   type ColumnDef,
   type RowSelectionState,
@@ -23,8 +22,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '../../lib/utils';
 import { DocumentStatusBadge } from './DocumentStatusBadge';
-import { Spinner } from '../ui/Spinner';
-import type { Document, DocumentListResponse } from '../../types/document.types';
+import type { Document, DocumentStatus, DocumentType } from '../../types/document.types';
 
 interface DocumentTableProps {
   data?: Document[];
@@ -65,100 +63,101 @@ export function DocumentTable({
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
-  const columnHelper = createColumnHelper<Document>();
+  const columns = useMemo<
+    ColumnDef<Document>[]
+  >(() => [
+    // Checkbox de sélection
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <input
+          type="checkbox"
+          className="rounded border-[var(--color-border)] text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
+          checked={table.getIsAllRowsSelected()}
+          onChange={table.getToggleAllRowsSelectedHandler()}
+        />
+      ),
+      cell: ({ row }) => (
+        <input
+          type="checkbox"
+          className="rounded border-[var(--color-border)] text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
+          checked={row.getIsSelected()}
+          onChange={row.getToggleSelectedHandler()}
+        />
+      ),
+      size: 40,
+    },
 
-  const columns = useMemo<ColumnDef<Document>[]>(
-    () => [
-      // Checkbox de sélection
-      columnHelper.display({
-        id: 'select',
-        header: ({ table }) => (
-          <input
-            type="checkbox"
-            className="rounded border-[var(--color-border)] text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
-            checked={table.getIsAllRowsSelected()}
-            onChange={table.getToggleAllRowsSelectedHandler()}
-          />
-        ),
-        cell: ({ row }) => (
-          <input
-            type="checkbox"
-            className="rounded border-[var(--color-border)] text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
-            checked={row.getIsSelected()}
-            onChange={row.getToggleSelectedHandler()}
-          />
-        ),
-        size: 40,
-      }),
-
-      // Nom du document avec icône
-      columnHelper.accessor('originalName', {
-        header: 'Nom',
-        cell: ({ row }) => {
-          const Icon = getFileIcon(row.original.mimeType);
-          return (
-            <div className="flex items-center gap-3">
-              <div className="shrink-0 w-8 h-8 rounded-lg bg-[var(--color-bg-subtle)] flex items-center justify-center">
-                <Icon className="h-4 w-4 text-[var(--color-text-muted)]" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-[var(--color-text-primary)] truncate max-w-[200px]">
-                  {row.original.originalName}
-                </p>
-                <p className="text-2xs text-[var(--color-text-muted)]">
-                  {formatFileSize(row.original.mimeType, row.original.filePath)}
-                </p>
-              </div>
+    // Nom du document avec icône
+    {
+      accessorKey: 'originalName',
+      header: 'Nom',
+      cell: ({ row }) => {
+        const Icon = getFileIcon(row.original.mimeType);
+        return (
+          <div className="flex items-center gap-3">
+            <div className="shrink-0 w-8 h-8 rounded-lg bg-[var(--color-bg-subtle)] flex items-center justify-center">
+              <Icon className="h-4 w-4 text-[var(--color-text-muted)]" />
             </div>
-          );
-        },
-      }),
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-[var(--color-text-primary)] truncate max-w-[200px]">
+                {row.original.originalName}
+              </p>
+              <p className="text-2xs text-[var(--color-text-muted)]">
+                {formatFileSize(row.original.mimeType, row.original.filePath)}
+              </p>
+            </div>
+          </div>
+        );
+      },
+    },
 
-      // Statut
-      columnHelper.accessor('status', {
-        header: 'Statut',
-        cell: ({ getValue }) => <DocumentStatusBadge status={getValue()} />,
-      }),
+    // Statut
+    {
+      accessorKey: 'status',
+      header: 'Statut',
+      cell: ({ getValue }) => <DocumentStatusBadge status={getValue() as DocumentStatus} />,
+    },
 
-      // Type de document
-      columnHelper.accessor('documentType', {
-        header: 'Type',
-        cell: ({ getValue }) => {
-          const type = getValue();
-          return (
-            <span className="text-sm text-[var(--color-text-secondary)]">
-              {type ?? '—'}
-            </span>
-          );
-        },
-      }),
-
-      // Date
-      columnHelper.accessor('createdAt', {
-        header: 'Date',
-        cell: ({ getValue }) => (
-          <span className="text-sm text-[var(--color-text-secondary)] whitespace-nowrap">
-            {format(new Date(getValue()), 'Pp', { locale: fr })}
+    // Type de document
+    {
+      accessorKey: 'documentType',
+      header: 'Type',
+      cell: ({ getValue }) => {
+        const type = getValue() as DocumentType | null;
+        return (
+          <span className="text-sm text-[var(--color-text-secondary)]">
+            {type ?? '—'}
           </span>
-        ),
-      }),
+        );
+      },
+    },
 
-      // Actions
-      columnHelper.display({
-        id: 'actions',
-        cell: () => (
-          <button
-            className="btn-ghost p-1 rounded-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <EllipsisVerticalIcon className="h-4 w-4" />
-          </button>
-        ),
-        size: 40,
-      }),
-    ],
-    [columnHelper],
-  );
+    // Date
+    {
+      accessorKey: 'createdAt',
+      header: 'Date',
+      cell: ({ getValue }) => (
+        <span className="text-sm text-[var(--color-text-secondary)] whitespace-nowrap">
+          {format(new Date(getValue() as string), 'Pp', { locale: fr })}
+        </span>
+      ),
+    },
+
+    // Actions
+    {
+      id: 'actions',
+      cell: () => (
+        <button
+          className="btn-ghost p-1 rounded-lg"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <EllipsisVerticalIcon className="h-4 w-4" />
+        </button>
+      ),
+      size: 40,
+    },
+  ], []);
 
   const table = useReactTable({
     data,

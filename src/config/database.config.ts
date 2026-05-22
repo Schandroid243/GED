@@ -7,7 +7,7 @@ import { OcrResult } from '../documents/entities/ocr-result.entity';
 export const databaseConfigFactory = (config: ConfigService): TypeOrmModuleOptions => ({
   type:        'mysql',
   host:        config.get<string>('DB_HOST') || 'localhost',
-  port:        parseInt(config.get<string>('DB_PORT')!, 10),
+  port:        config.get<number>('DB_PORT') || 3306,
   username:    config.get<string>('DB_USER')!,
   password:    config.get<string>('DB_PASSWORD')!,
   database:    config.get<string>('DB_NAME')!,

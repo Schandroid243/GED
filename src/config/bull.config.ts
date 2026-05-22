@@ -1,8 +1,8 @@
-import { BullModuleOptions } from '@nestjs/bull';
+import { BullRootModuleOptions } from '@nestjs/bullmq';
 import { ConfigService } from '@nestjs/config';
 
-export const bullConfigFactory = (config: ConfigService): BullModuleOptions => ({
-  redis: {
+export const bullConfigFactory = (config: ConfigService): BullRootModuleOptions => ({
+  connection: {
     host:               config.get<string>('REDIS_HOST') || 'localhost',
     port:               config.get<number>('REDIS_PORT') || 6379,
     password:           config.get<string>('REDIS_PASSWORD') || undefined,

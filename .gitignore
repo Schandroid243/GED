@@ -1,3 +1,7 @@
 node_modules
-.env.*
+.env.agents
+.env.local
+.env.production
+frontend/.env
 PROMPT_LLM.md
+

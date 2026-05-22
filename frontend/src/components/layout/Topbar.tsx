@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   MagnifyingGlassIcon,
@@ -11,7 +11,6 @@ import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react';
 import { cn } from '../../lib/utils';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuthStore } from '../../stores/auth.store';
-import { useUIStore } from '../../stores/ui.store';
 import { Avatar } from '../ui/Avatar';
 import { useDebounce } from '../../hooks/useDebounce';
 

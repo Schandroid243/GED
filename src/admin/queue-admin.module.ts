@@ -1,6 +1,6 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectQueue } from '@nestjs/bull';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { ExpressAdapter } from '@bull-board/express';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
@@ -8,7 +8,7 @@ import { createBullBoard } from '@bull-board/api';
 import { QueueName } from '../common/queues/queue-names.enum';
 
 // Middleware BasicAuth simple pour protéger le dashboard
-import * as basicAuth from 'express-basic-auth';
+import basicAuth from 'express-basic-auth';
 
 /**
  * Module qui expose le tableau de bord Bull Board sur /admin/queues.

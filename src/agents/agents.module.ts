@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { BullModule } from '@nestjs/bull';
+import { BullModule } from '@nestjs/bullmq';
 import { envValidationSchema } from '../config/env.validation';
 import { bullConfigFactory } from '../config/bull.config';
 import { QueueName } from '../common/queues/queue-names.enum';
@@ -57,7 +57,7 @@ import { QueueAdminModule }     from '../admin/queue-admin.module';
     }),
     TypeOrmModule.forFeature([JobRecord]),
 
-    // BullMQ global
+    // BullMQ global – utilise connection: (BullMQ v5) depuis bullConfigFactory
     BullModule.forRootAsync({
       imports:    [ConfigModule],
       useFactory: bullConfigFactory,

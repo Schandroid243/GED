@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/axios';
+import type { DocumentListResponse } from '../types/document.types';
 
 export interface DocumentListParams {
   page:     number;
@@ -7,12 +8,16 @@ export interface DocumentListParams {
   status?:  string;
   type?:    string;
   search?:  string;
+  dateFrom?: string;
+  dateTo?: string;
+  sort?:    string;
+  order?:   string;
   tenantId?: string;
 }
 
 /** Liste paginée des documents avec filtres */
 export function useDocuments(params: DocumentListParams) {
-  return useQuery({
+  return useQuery<DocumentListResponse>({
     queryKey: ['documents', params],
     queryFn:  () => api.get('/documents', { params }).then((r) => r.data),
     placeholderData: (prev) => prev,
@@ -55,3 +60,4 @@ export function useUpdateDocumentStatus() {
     onSuccess:  () => qc.invalidateQueries({ queryKey: ['documents'] }),
   });
 }
+

@@ -1,17 +1,17 @@
-import { Processor, Process, OnQueueFailed } from '@nestjs/bull';
+import { Processor, OnWorkerEvent } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job, Queue } from 'bullmq';
+import { WorkerHost } from '@nestjs/bullmq';
 import { ConfigService } from '@nestjs/config';
-import { InjectQueue } from '@nestjs/bull';
+import { InjectQueue } from '@nestjs/bullmq';
 import { QueueName } from '../../common/queues/queue-names.enum';
 import { NotificationService } from './notification.service';
 import { NotificationJobData } from './interfaces/notification-job.interface';
 import { NonRetriableError } from '../../common/errors/non-retriable.error';
 
-@Processor(QueueName.NOTIFICATION)
-export class NotificationProcessor {
+@Processor(QueueName.NOTIFICATION, { concurrency: 5 })
+export class NotificationProcessor extends WorkerHost {
   private readonly logger = new Logger(NotificationProcessor.name);
-  private readonly concurrency: number;
 
   constructor(
     private readonly notificationService: NotificationService,
@@ -19,20 +19,17 @@ export class NotificationProcessor {
     private readonly deadLetterQueue: Queue,
     private readonly config: ConfigService,
   ) {
-    this.concurrency = config.get<number>('NOTIFICATION_CONCURRENCY', 5);
+    super();
   }
 
-  @Process({ name: 'send', concurrency: 5 })
-  async handleSend(job: Job<NotificationJobData>): Promise<void> {
+  async process(job: Job<NotificationJobData, unknown, string>): Promise<void> {
     const { correlationId, templateName, userIds } = job.data;
     this.logger.log(
       `[${correlationId}] Notification démarrée : template=${templateName} destinataires=${userIds.length}`,
     );
 
-    await job.updateProgress(0);
     try {
       await this.notificationService.send(job.data, (p) => job.updateProgress(p));
-      await job.updateProgress(100);
       this.logger.log(
         `[${correlationId}] Notification terminée : template=${templateName}`,
       );
@@ -55,7 +52,7 @@ export class NotificationProcessor {
   /**
    * Envoie le job vers la Dead Letter Queue après échec définitif.
    */
-  @OnQueueFailed()
+  @OnWorkerEvent('failed')
   async onFailed(job: Job<NotificationJobData>, error: Error): Promise<void> {
     const maxAttempts = job.opts.attempts ?? 3;
 

@@ -1,35 +1,35 @@
-import { Processor, Process, OnQueueFailed } from '@nestjs/bull';
+import { Processor, OnWorkerEvent } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
+import { WorkerHost } from '@nestjs/bullmq';
 import { ConfigService } from '@nestjs/config';
 import { QueueName } from '../../common/queues/queue-names.enum';
 import { WorkflowEngineService } from './workflow-engine.service';
 import { WorkflowEngineJobData } from './interfaces/workflow-engine-job.interface';
 import { NonRetriableError } from '../../common/errors/non-retriable.error';
 
-@Processor(QueueName.WORKFLOW_ENGINE)
-export class WorkflowEngineProcessor {
+@Processor(QueueName.WORKFLOW_ENGINE, { concurrency: 1 })
+export class WorkflowEngineProcessor extends WorkerHost {
   private readonly logger = new Logger(WorkflowEngineProcessor.name);
 
   constructor(
     private readonly workflowEngineService: WorkflowEngineService,
     private readonly config: ConfigService,
-  ) {}
+  ) {
+    super();
+  }
 
   /**
    * Concurrency: 1 est OBLIGATOIRE pour garantir l'ordre des événements métier par tenant.
    */
-  @Process({ name: 'event', concurrency: 1 })
-  async handleEvent(job: Job<WorkflowEngineJobData>): Promise<void> {
+  async process(job: Job<WorkflowEngineJobData, unknown, string>): Promise<void> {
     const { documentId, eventType, correlationId } = job.data;
     this.logger.log(
       `[${correlationId}] Événement workflow reçu : ${eventType} pour ${documentId}`,
     );
 
-    await job.updateProgress(0);
     try {
       await this.workflowEngineService.processEvent(job.data, (p) => job.updateProgress(p));
-      await job.updateProgress(100);
       this.logger.log(
         `[${correlationId}] Événement workflow traité : ${eventType} pour ${documentId}`,
       );
@@ -49,7 +49,7 @@ export class WorkflowEngineProcessor {
     }
   }
 
-  @OnQueueFailed()
+  @OnWorkerEvent('failed')
   async onFailed(job: Job<WorkflowEngineJobData>, error: Error): Promise<void> {
     this.logger.error(
       `[${job.data.correlationId}] Job workflow ${job.id} échoué définitivement : ${error.message}` +

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { cn } from '../../lib/utils';
 import { EmptyState } from '../ui/EmptyState';
 import { useQueueStats } from '../../hooks/useJobs';
+import type { QueueStats } from '../../types/job.types';
 
 interface QueueDepthDataPoint {
   timestamp: string;
@@ -94,7 +95,7 @@ export function QueueDepthChart({ data, className }: QueueDepthChartProps) {
   const realtimeData: QueueDepthDataPoint[] = useMemo(() => {
     if (!queueStats || queueStats.length === 0) return data ?? [];
     const now = new Date().toISOString();
-    return queueStats.map((q) => ({
+    return queueStats.map((q: QueueStats) => ({
       timestamp: now,
       queueName: q.name,
       depth: q.waiting + q.active,
