@@ -11,9 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QueueAdminModule = void 0;
 const common_1 = require("@nestjs/common");
@@ -24,7 +21,7 @@ const express_1 = require("@bull-board/express");
 const bullMQAdapter_1 = require("@bull-board/api/bullMQAdapter");
 const api_1 = require("@bull-board/api");
 const queue_names_enum_1 = require("../common/queues/queue-names.enum");
-const express_basic_auth_1 = __importDefault(require("express-basic-auth"));
+const basicAuth = require("express-basic-auth");
 let QueueAdminModule = class QueueAdminModule {
     q1;
     q2;
@@ -59,7 +56,7 @@ let QueueAdminModule = class QueueAdminModule {
         const username = this.config.get('BULL_BOARD_USERNAME', 'admin');
         const password = this.config.get('BULL_BOARD_PASSWORD', 'changeme');
         consumer
-            .apply((0, express_basic_auth_1.default)({
+            .apply(basicAuth({
             users: { [username]: password },
             challenge: true,
             realm: 'BullBoard Admin',

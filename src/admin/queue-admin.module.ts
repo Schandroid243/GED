@@ -8,7 +8,7 @@ import { createBullBoard } from '@bull-board/api';
 import { QueueName } from '../common/queues/queue-names.enum';
 
 // Middleware BasicAuth simple pour protéger le dashboard
-import basicAuth from 'express-basic-auth';
+import basicAuth = require('express-basic-auth');
 
 /**
  * Module qui expose le tableau de bord Bull Board sur /admin/queues.
