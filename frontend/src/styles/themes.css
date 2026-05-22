@@ -1,0 +1,60 @@
+/* ── Variables CSS – Thème CLAIR ──────────────────── */
+:root,
+.light {
+  --color-bg-base:       #f8f8f7;   /* page background */
+  --color-bg-surface:    #ffffff;   /* cards, panels */
+  --color-bg-subtle:     #f0efee;   /* lignes alternées, hover */
+  --color-bg-overlay:    rgba(0,0,0,.04);
+
+  --color-border:        #e4e2e0;
+  --color-border-strong: #cbc8c4;
+
+  --color-text-primary:  #161513;
+  --color-text-secondary:#5a5651;
+  --color-text-muted:    #a09c97;
+  --color-text-inverse:  #ffffff;
+
+  --color-accent:        #426e42;
+  --color-accent-hover:  #325432;
+  --color-accent-muted:  #dce8dc;
+  --color-accent-text:   #193019;
+
+  --color-sidebar-bg:    #ffffff;
+  --color-sidebar-item-hover: #f0efee;
+  --color-sidebar-item-active: #dce8dc;
+  --color-sidebar-item-active-text: #253e25;
+
+  --shadow-card:   0 1px 3px 0 rgba(0,0,0,.06), 0 1px 2px -1px rgba(0,0,0,.04);
+  --shadow-modal:  0 20px 60px -10px rgba(0,0,0,.18);
+  --radius:        0.5rem;
+  --radius-lg:     0.875rem;
+}
+
+/* ── Variables CSS – Thème SOMBRE ────────────────── */
+.dark {
+  --color-bg-base:       #0d0c0b;
+  --color-bg-surface:    #161513;
+  --color-bg-subtle:     #1e1c1a;
+  --color-bg-overlay:    rgba(255,255,255,.04);
+
+  --color-border:        #282624;
+  --color-border-strong: #3f3c39;
+
+  --color-text-primary:  #f0efee;
+  --color-text-secondary:#a09c97;
+  --color-text-muted:    #5a5651;
+  --color-text-inverse:  #0d0c0b;
+
+  --color-accent:        #8fb38f;   /* accent éclairci pour fond sombre */
+  --color-accent-hover:  #b9d1b9;
+  --color-accent-muted:  #1b4332;
+  --color-accent-text:   #dce8dc;
+
+  --color-sidebar-bg:    #0d0c0b;
+  --color-sidebar-item-hover:  #1e1c1a;
+  --color-sidebar-item-active: #1b4332;
+  --color-sidebar-item-active-text: #b9d1b9;
+
+  --shadow-card:   0 1px 3px 0 rgba(0,0,0,.5), 0 1px 2px -1px rgba(0,0,0,.4);
+  --shadow-modal:  0 20px 60px -10px rgba(0,0,0,.6);
+}
