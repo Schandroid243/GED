@@ -21,12 +21,22 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 interface LoginResponse {
-  access_token: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
   user: {
     id: string;
-    name: string;
     email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
     tenantId: string;
+  };
+  tenant: {
+    id: string;
+    name: string;
+    slug: string;
+    plan: string;
   };
 }
 
@@ -50,9 +60,14 @@ export function LoginPage() {
   const onSubmit = async (formData: LoginFormData) => {
     setIsLoading(true);
     try {
-      const response = await api.post<LoginResponse>('/auth/login', formData);
-      const { access_token, user } = response.data;
-      setAuth(access_token, user);
+      const response = await api.post<LoginResponse>('/auth/signin', formData);
+      const { accessToken, user } = response.data;
+      setAuth(accessToken, {
+        id: user.id,
+        name: `${user.firstName} ${user.lastName}`,
+        email: user.email,
+        tenantId: user.tenantId,
+      });
       toast.success('Connexion réussie');
       navigate('/dashboard', { replace: true });
     } catch (error: unknown) {
@@ -153,3 +168,4 @@ export function LoginPage() {
     </div>
   );
 }
+

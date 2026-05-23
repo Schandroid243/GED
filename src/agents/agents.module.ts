@@ -35,7 +35,7 @@ import { QueueAdminModule }     from '../admin/queue-admin.module';
     // Config global – charge .env.agents, valide le schéma Joi
     ConfigModule.forRoot({
       isGlobal:         true,
-      envFilePath:      '.env.agents',
+      envFilePath:      ['.env.agents', 'src/.env'],
       validationSchema: envValidationSchema,
     }),
 
@@ -88,3 +88,4 @@ import { QueueAdminModule }     from '../admin/queue-admin.module';
   providers: [JobLifecycleListener],
 })
 export class AgentsModule {}
+
