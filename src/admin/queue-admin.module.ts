@@ -1,6 +1,6 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectQueue } from '@nestjs/bullmq';
+import { BullModule, InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { ExpressAdapter } from '@bull-board/express';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
@@ -14,7 +14,20 @@ import basicAuth = require('express-basic-auth');
  * Module qui expose le tableau de bord Bull Board sur /admin/queues.
  * Protégé par BasicAuth utilisant BULL_BOARD_USERNAME / BULL_BOARD_PASSWORD.
  */
-@Module({})
+@Module({
+  imports: [
+    BullModule.registerQueue(
+      { name: QueueName.DOCUMENT_INGESTION },
+      { name: QueueName.OCR_EXTRACTION },
+      { name: QueueName.CLASSIFICATION },
+      { name: QueueName.INDEXING },
+      { name: QueueName.WORKFLOW_ENGINE },
+      { name: QueueName.NOTIFICATION },
+      { name: QueueName.ARCHIVE },
+      { name: QueueName.DEAD_LETTER },
+    ),
+  ],
+})
 export class QueueAdminModule implements NestModule {
   constructor(
     @InjectQueue(QueueName.DOCUMENT_INGESTION) private readonly q1: Queue,

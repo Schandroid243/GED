@@ -6,6 +6,8 @@
     "build": "nest build",
     "start:agents": "node dist/main.agents.js",
     "start:agents:dev": "ts-node -r tsconfig-paths/register src/main.agents.ts",
+    "seed": "ts-node -r tsconfig-paths/register src/seed.ts",
+    "seed:clean": "ts-node -r tsconfig-paths/register src/seed.ts --clean",
     "test": "jest",
     "test:integration": "jest --config jest.integration.config.ts",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
@@ -38,7 +40,8 @@
     "redlock": "^5.0.0-beta.2",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "typeorm": "^1.0.0"
+    "typeorm": "^1.0.0",
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.21",
@@ -48,6 +51,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^25.9.1",
     "@types/nodemailer": "^8.0.0",
+    "@types/uuid": "^11.0.0",
     "@typescript-eslint/eslint-plugin": "^8.59.4",
     "@typescript-eslint/parser": "^8.59.4",
     "eslint": "^10.4.0",

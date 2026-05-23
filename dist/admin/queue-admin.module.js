@@ -66,7 +66,11 @@ let QueueAdminModule = class QueueAdminModule {
 };
 exports.QueueAdminModule = QueueAdminModule;
 exports.QueueAdminModule = QueueAdminModule = __decorate([
-    (0, common_1.Module)({}),
+    (0, common_1.Module)({
+        imports: [
+            bullmq_1.BullModule.registerQueue({ name: queue_names_enum_1.QueueName.DOCUMENT_INGESTION }, { name: queue_names_enum_1.QueueName.OCR_EXTRACTION }, { name: queue_names_enum_1.QueueName.CLASSIFICATION }, { name: queue_names_enum_1.QueueName.INDEXING }, { name: queue_names_enum_1.QueueName.WORKFLOW_ENGINE }, { name: queue_names_enum_1.QueueName.NOTIFICATION }, { name: queue_names_enum_1.QueueName.ARCHIVE }, { name: queue_names_enum_1.QueueName.DEAD_LETTER }),
+        ],
+    }),
     __param(0, (0, bullmq_1.InjectQueue)(queue_names_enum_1.QueueName.DOCUMENT_INGESTION)),
     __param(1, (0, bullmq_1.InjectQueue)(queue_names_enum_1.QueueName.OCR_EXTRACTION)),
     __param(2, (0, bullmq_1.InjectQueue)(queue_names_enum_1.QueueName.CLASSIFICATION)),
