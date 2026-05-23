@@ -5,4 +5,4 @@ node_modules
 .env.production
 frontend/.env
 PROMPT_LLM.md
-
+dist
