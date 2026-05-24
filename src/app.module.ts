@@ -37,11 +37,11 @@ import { Tenant } from './tenants/entities/tenant.entity';
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
         type: 'mysql',
-        host: config.get<string>('DB_HOST'),
-        port: config.get<number>('DB_PORT') as number,
-        username: config.get<string>('DB_USER'),
-        password: config.get<string>('DB_PASSWORD'),
-        database: config.get<string>('DB_NAME'),
+        host: config.getOrThrow<string>('DB_HOST'),
+        port: config.get<number>('DB_PORT')!,
+        username: config.getOrThrow<string>('DB_USER'),
+        password: config.getOrThrow<string>('DB_PASSWORD'),
+        database: config.getOrThrow<string>('DB_NAME'),
         entities: [JobRecord, Document, OcrResult, User, Tenant],
         synchronize: config.get<boolean>('DB_SYNCHRONIZE') ?? false,
         logging: config.get<boolean>('DB_LOGGING') ?? false,
@@ -81,3 +81,4 @@ import { Tenant } from './tenants/entities/tenant.entity';
   ],
 })
 export class AppModule {}
+
