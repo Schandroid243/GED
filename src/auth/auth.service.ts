@@ -124,18 +124,25 @@ export class AuthService {
   }
 
   // ── Rafraîchir les tokens ─────────────────────────────────
-  async refreshTokens(
-    userId: string,
-    refreshToken: string,
-  ): Promise<AuthResponseDto> {
-    // 1. Trouver l'user
-    const user = await this.userRepo.findOne({ where: { id: userId } });
+  async refreshTokens(refreshToken: string): Promise<AuthResponseDto> {
+    // 1. Décoder le refresh token pour extraire le userId (sub)
+    let payload: { sub: string };
+    try {
+      payload = await this.jwtService.verifyAsync<{ sub: string }>(refreshToken, {
+        secret: this.config.get<string>('JWT_REFRESH_SECRET')!,
+      });
+    } catch {
+      throw new ForbiddenException('Refresh token invalide ou expiré');
+    }
+
+    // 2. Trouver l'user
+    const user = await this.userRepo.findOne({ where: { id: payload.sub } });
 
     if (!user || !user.refreshToken) {
       throw new ForbiddenException('Accès refusé');
     }
 
-    // 2. Vérifier le refresh token
+    // 3. Vérifier le refresh token
     const isValid = await bcrypt.compare(refreshToken, user.refreshToken);
     if (!isValid) {
       throw new ForbiddenException('Accès refusé');
@@ -147,7 +154,7 @@ export class AuthService {
       throw new ForbiddenException('Votre organisation est inactive.');
     }
 
-    // 3. Rotation : générer nouveaux tokens
+    // 4. Rotation : générer nouveaux tokens
     const tokens = await this.generateTokens(user.id, user.email, tenant.id, user.role);
 
     const hashedRefreshToken = await bcrypt.hash(tokens.refreshToken, 10);
@@ -160,7 +167,7 @@ export class AuthService {
 
   // ── Déconnexion ───────────────────────────────────────────
   async signOut(userId: string): Promise<void> {
-    await this.userRepo.update(userId, { refreshToken: null as any });
+    await this.userRepo.update(userId, { refreshToken: undefined } as any);
     this.logger.log(`Déconnexion : userId ${userId}`);
   }
 

@@ -7,8 +7,6 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
@@ -22,8 +20,6 @@ import { JwtValidatedUser } from './strategies/jwt.strategy';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly jwtService: JwtService,
-    private readonly config: ConfigService,
   ) {}
 
   @Post('signup')
@@ -41,11 +37,8 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refresh(@Body() dto: RefreshTokenDto): Promise<AuthResponseDto> {
-    // Décoder le refresh token pour extraire l'userId (sub)
-    const payload = this.jwtService.verify(dto.refreshToken, {
-      secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-    }) as { sub: string };
-    return this.authService.refreshTokens(payload.sub, dto.refreshToken);
+    // Le service décode le refresh token pour extraire le userId
+    return this.authService.refreshTokens(dto.refreshToken);
   }
 
   @Post('signout')

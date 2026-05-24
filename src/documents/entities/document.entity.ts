@@ -1,5 +1,5 @@
 import {
-  Entity, PrimaryColumn, Column, UpdateDateColumn, Index,
+  Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, Index,
 } from 'typeorm';
 import { DocumentStatus } from '../enums/document-status.enum';
 import { DocumentType } from '../enums/document-type.enum';
@@ -51,9 +51,10 @@ export class Document {
   @Column({ type: 'varchar', length: 36 })
   uploadedBy!: string;                   // UUID utilisateur
 
-  @Column({ type: 'datetime', nullable: true })
-  createdAt?: Date;
+  @CreateDateColumn()
+  createdAt!: Date;
 
   @UpdateDateColumn()
   updatedAt!: Date;
 }
+
